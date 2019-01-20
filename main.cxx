@@ -14,17 +14,18 @@
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3) {
+    if (argc != 2) {
         return -1;
     }
 
-    int num_points = atoi(argv[1]);
-
-    if (num_points < 1)
-        return -1;
-
     FILE* fp = fopen(argv[2], "r");
     if (!fp)
+        return -1;
+
+    int num_points = 0;
+
+    fscanf(fp, "%d", &num_points);
+    if (num_points < 1)
         return -1;
 
     double* x = new double[num_points];

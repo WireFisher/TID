@@ -1,3 +1,3 @@
 #!/bin/bash
 
-g++ delaunay.cxx memory_pool.cxx main.cxx -o basic
+g++ -O3 delaunay.cxx memory_pool.cxx main.cxx -o basic

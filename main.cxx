@@ -18,15 +18,19 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    FILE* fp = fopen(argv[2], "r");
-    if (!fp)
+    FILE* fp = fopen(argv[1], "r");
+    if (!fp) {
+	perror("No such file\n");
         return -1;
+    }
 
     int num_points = 0;
 
     fscanf(fp, "%d", &num_points);
-    if (num_points < 1)
+    if (num_points < 1) {
+	perror("Wrong number of points\n");
         return -1;
+    }
 
     double* x = new double[num_points];
     double* y = new double[num_points];

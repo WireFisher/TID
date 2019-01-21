@@ -48,6 +48,9 @@ int main(int argc, char* argv[])
 
     gettimeofday(&end, NULL);
     fprintf(stderr, "triangle: %ld us, points: %d\n", (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec), num_points);
+    
+    delete[] x;
+    delete[] y;
 
     return 0;
 }

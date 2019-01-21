@@ -865,41 +865,12 @@ int Triangle::circum_circle_contains(Point* whole_points, Point *p, double toler
     //calulate_circum_circle();
     double dist2 = ((p->x - circum_center[0]) * (p->x - circum_center[0])) + ((p->y - circum_center[1]) * (p->y - circum_center[1]));
     double radius2 = circum_radius*circum_radius;
-    if(fabs(dist2 - radius2)/(fabs(dist2) + fabs(radius2)) < tolerance &&
+    if(fabs(dist2 - radius2) < tolerance &&
        really_on_circum_circle(whole_points, p, tolerance))
         return 0;
     else if(dist2 < circum_radius*circum_radius)
         return 1;
     else // (dist > circum_radius)
-        return -1;
-
-    double a = whole_points[v[0]].x;
-    double b = whole_points[v[0]].y;
-    double e = whole_points[v[1]].x;
-    double f = whole_points[v[1]].y;
-    double i = whole_points[v[2]].x;
-    double j = whole_points[v[2]].y;
-    double m = p->x;
-    double n = p->y;
-
-    double c = a*a+b*b;
-    double g = e*e+f*f;
-    double k = i*i+j*j;
-    double o = m*m+n*n;
-
-    double left = a*f*k+a*g*n+a*j*o+b*e*o+b*g*i+b*k*m+c*e*j+c*f*m+c*i*n+e*k*n+f*i*o+g*j*m;
-    double rite = a*f*o+a*g*j+a*k*n+b*e*k+b*g*m+b*i*o+c*e*n+c*f*i+c*j*m+e*j*o+f*k*m+g*i*n;
-
-    double max_value = max(max(max(max(max(max(max(fabs(b), fabs(f)), fabs(j)), fabs(n)), fabs(a)), fabs(e)), fabs(i)), fabs(m));
-    double four_time = max_value * max_value * max_value * max_value;
-    //left /= four_time;
-    //rite /= four_time;
-
-    if(fabs(left - rite) < four_time * 1e-13)
-        return 0;
-    else if(left > rite)
-        return 1;
-    else
         return -1;
 
 }

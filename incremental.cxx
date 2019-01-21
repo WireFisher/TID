@@ -163,11 +163,11 @@ int main(int argc, char* argv[])
             delete triangulation;
             triangulation = new Delaunay_Voronoi();
         }
-        triangulation->add_points(x, y, num_points);
 
         timeval start, end;
         gettimeofday(&start, NULL);
 
+        triangulation->add_points(x, y, num_points);
         triangulation->triangulate();
 
         gettimeofday(&end, NULL);

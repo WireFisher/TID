@@ -14,16 +14,16 @@
 #include "delaunay.h"
 
 char rand_fine[][64] = {
-    "lonlat_random_10000000_0.flat",
-    "lonlat_random_10000000_1.flat",
+    "blocksize_random_10000000_0.flat",
+    "blocksize_random_10000000_1.flat",
 };
 char rand_midd[][64] = {
-    "lonlat_random_1000000_0.flat",
-    "lonlat_random_1000000_1.flat",
+    "blocksize_random_1000000_0.flat",
+    "blocksize_random_1000000_1.flat",
 };
 char rand_cors[][64] = {
-    "lonlat_random_100000_0.flat",
-    "lonlat_random_100000_1.flat",
+    "blocksize_random_100000_0.flat",
+    "blocksize_random_100000_1.flat",
 };
 
 char path[] = "grid/expand/%s";
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < 2; i++)
     {
         char filepath[64];
-        snprintf(filepath, 64, path, cube_fine[i]);
+        snprintf(filepath, 64, path, rand_cors[i]);
 
         if (i > 0 && non_incremental)
             strncat(filepath, ".png.flat", 64);

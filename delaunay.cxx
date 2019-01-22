@@ -1535,7 +1535,7 @@ static inline void hash(const Bound* bound, double block_size, double min_x, dou
 
 
 #define PAT_TRIANGLES_PER_BLOCK (50)
-#define PAT_MAX_BLOCK (10000)
+#define PAT_MAX_BLOCK (1600)
 void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* y, int num, int** output_nexts)
 {
     double min_x = all_points[0].x;
@@ -1551,7 +1551,10 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
 
     memset(nexts, -1, num*sizeof(int));
 
-    unsigned block_size = std::sqrt(std::min(num_triangles / PAT_TRIANGLES_PER_BLOCK, (unsigned)PAT_MAX_BLOCK));
+    //unsigned block_size = std::sqrt(std::min(num_triangles / PAT_TRIANGLES_PER_BLOCK, (unsigned)PAT_MAX_BLOCK));
+    //unsigned dim = PAT_BLOCK_DIM;
+    unsigned dim = (unsigned)floor(sqrt(21 * log(num_points / 4000.0)));
+    unsigned block_size = std::min(dim*dim, (unsigned)PAT_MAX_BLOCK);
 
     if (block_size*block_size > 2) {
         Bound* bound = make_bounding_box();

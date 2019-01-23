@@ -1553,6 +1553,7 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
 
     //unsigned block_size = std::sqrt(std::min(num_triangles / PAT_TRIANGLES_PER_BLOCK, (unsigned)PAT_MAX_BLOCK));
     //unsigned dim = PAT_BLOCK_DIM;
+    //printf("expect blocksize: %u\n", (unsigned)floor(sqrt(21 * log(num_points / 4000.0))));
     unsigned dim = (unsigned)floor(sqrt(21 * log(num_points / 4000.0)));
     unsigned block_size = std::min(dim*dim, (unsigned)PAT_MAX_BLOCK);
 

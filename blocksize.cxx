@@ -26,6 +26,32 @@ char rand_cors[][64] = {
     "blocksize_random_100000_1.flat",
 };
 
+char lonlat_fine[][64] = {
+    "blocksize_lonlat_0.1_0.flat",
+    "blocksize_lonlat_0.1_1.flat",
+};
+char lonlat_midd[][64] = {
+    "blocksize_lonlat_0.3_0.flat",
+    "blocksize_lonlat_0.3_1.flat",
+};
+char lonlat_cors[][64] = {
+    "blocksize_lonlat_1_0.flat",
+    "blocksize_lonlat_1_1.flat",
+};
+
+char cube_fine[][64] = {
+    "blocksize_cube_0.1_0.flat",
+    "blocksize_cube_0.1_1.flat",
+};
+char cube_midd[][64] = {
+    "blocksize_cube_0.3_0.flat",
+    "blocksize_cube_0.3_1.flat",
+};
+char cube_cors[][64] = {
+    "blocksize_cube_1_0.flat",
+    "blocksize_cube_1_1.flat",
+};
+
 char path[] = "grid/expand/%s";
 
 int main(int argc, char* argv[])
@@ -37,7 +63,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < 2; i++)
     {
         char filepath[64];
-        snprintf(filepath, 64, path, rand_cors[i]);
+        snprintf(filepath, 64, path, cube_cors[i]);
 
         if (i > 0 && non_incremental)
             strncat(filepath, ".png.flat", 64);

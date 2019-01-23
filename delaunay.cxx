@@ -609,6 +609,7 @@ bool Delaunay_Voronoi::is_delaunay_legal(const Point *pt, const Edge *edge)
  *  1: triangle
  *  2: twin triangle
  */
+
 void Delaunay_Voronoi::legalize_triangles(int vr_idx, Edge *edge, unsigned stack_base, unsigned *stack_top)
 {
     PDASSERT(vr_idx != edge->head);
@@ -617,6 +618,7 @@ void Delaunay_Voronoi::legalize_triangles(int vr_idx, Edge *edge, unsigned stack
         return;
     int rank;
 
+    nFlips++;
     PDASSERT(edge->triangle->is_leaf);
     PDASSERT(edge->twin_edge->triangle->is_leaf);
     push(stack_top, edge->twin_edge->triangle);
@@ -1438,6 +1440,7 @@ Delaunay_Voronoi::Delaunay_Voronoi()
     , global_index(NULL)
     , point_idx_to_buf_idx(NULL)
     , have_bound(false)
+    , nFlips(0)
 {
     avoiding_line_head[0].x = avoiding_line_head[0].y = 0;
     avoiding_line_head[1].x = avoiding_line_head[1].y = 0;

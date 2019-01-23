@@ -153,6 +153,9 @@ class Delaunay_Voronoi
         inline Point* tail(const Edge* e) { return &all_points[e->tail]; };
 
     public:
+
+	unsigned nFlips;
+
         Delaunay_Voronoi();
         ~Delaunay_Voronoi();
 

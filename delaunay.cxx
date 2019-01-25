@@ -1573,6 +1573,8 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
         unsigned* num_including_points = new unsigned[block_size*block_size]();
         unsigned* num_including_triangles = new unsigned[block_size*block_size]();
 
+        unsigned points_buf_len = num;
+        unsigned triangles_buf_len = 0;
         /* first scan: counting */
         for (int i = 0; i < num; i++) {
             unsigned idx = hash(x[i], y[i], block_size, min_x, len_x, min_y, len_y);
@@ -1589,21 +1591,32 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
                     PDASSERT(k < block_size);
                     PDASSERT(idx < block_size*block_size);
                     num_including_triangles[idx]++;
+                    triangles_buf_len++;
                 }
         }
 
         /* allocing memory */
         unsigned** including_points = new unsigned*[block_size*block_size];
         unsigned** including_triangles = new unsigned*[block_size*block_size];
+
+        unsigned* points_idx_buf = new unsigned[points_buf_len];
+        unsigned* triangles_idx_buf = new unsigned[triangles_buf_len];
+
+        unsigned* unassinged_p_buf = points_idx_buf;
+        unsigned* unassinged_t_buf = triangles_idx_buf;
         for (unsigned i = 0; i < block_size*block_size; i++) {
             if (num_including_points[i] > 0) {
-                including_points[i] = new unsigned[num_including_points[i]];
-                including_triangles[i] = new unsigned[num_including_triangles[i]];
+                including_points[i] = unassinged_p_buf;
+                including_triangles[i] = unassinged_t_buf;
+                unassinged_p_buf += num_including_points[i];
+                unassinged_t_buf += num_including_triangles[i];
             } else {
                 including_points[i] = NULL;
                 including_triangles[i] = NULL;
             }
         }
+        assert(unassinged_p_buf == points_idx_buf + points_buf_len);
+        assert(unassinged_t_buf <= triangles_idx_buf + triangles_buf_len);
 
         /* second scan: distributing points and triangles into mesh */
         memset(num_including_points, 0, sizeof(unsigned)*block_size*block_size);
@@ -1660,15 +1673,15 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
         }
 
         /* freeing memory */
-        for (unsigned i = 0; i < block_size*block_size; i++) {
-            delete[] including_points[i];
-            delete[] including_triangles[i];
-        }
         delete[] including_points;
         delete[] including_triangles;
 
         delete[] num_including_points;
         delete[] num_including_triangles;
+
+        delete[]  points_idx_buf;
+        delete[]  triangles_idx_buf;
+
         delete[] bound;
     } else {
         for (int i = 0; i < num; i++) {

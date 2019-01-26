@@ -9,6 +9,14 @@
 
 class Triangle;
 class Triangle_inline;
+class Triangle_withBound;
+
+struct Bound {
+    double min_x;
+    double max_x;
+    double min_y;
+    double max_y;
+};
 
 class Point
 {
@@ -26,8 +34,10 @@ class Point
         double calculate_distance(const Point*) const;
         double calculate_distance(double, double) const;
         int position_to_edge(const Point*, const Point*) const;
+        int position_to_edge(double, double, double, double) const;
         int position_to_triangle(const Point*, const Point*, const Point*) const;
         int position_to_triangle(const Triangle_inline*) const;
+        int position_to_triangle(Triangle_withBound*) const;
         int is_in_region(double min_x, double max_x, double min_y, double max_y) const;
 };
 
@@ -103,5 +113,20 @@ class Triangle_inline
         void check_cyclic();
         friend bool operator == (Triangle_inline, Triangle_inline);
 };
+
+class Triangle_withBound
+{
+    public:
+        double v_x[3];
+        double v_y[3];
+        double min_x;
+        double max_x;
+        double min_y;
+        double max_y;
+        int index_in_vector;
+        Triangle_withBound() {};
+        void make_from_triangle(double, double, double, double, double, double, Bound*, unsigned);
+};
+
 
 #endif

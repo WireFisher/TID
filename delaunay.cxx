@@ -210,6 +210,16 @@ int Point::position_to_edge(const Point *pt1, const Point *pt2) const
 }
 
 
+int Point::position_to_edge(double x1, double y1, double x2, double y2) const
+{
+    double ret = compute_three_2D_points_cross_product(x, y, x1, y1, x2, y2);
+
+    if (float_eq_low(ret, 0))
+        return 0;
+    else if (ret > 0)
+        return 1;
+    else return -1;
+}
 /**
  * Check point's position relative to a triangle
  * This point and points of the triangle should be distinct
@@ -241,6 +251,28 @@ int Point::position_to_triangle(const Point* v0, const Point* v1, const Point* v
     else if (pos == 0)
         ret = 2;
     pos = position_to_edge(v2, v0);
+    if (pos == -1)
+        return -1;
+    else if (pos == 0)
+        ret = 3;
+    return ret;
+}
+
+
+int Point::position_to_triangle(Triangle_withBound *tb) const
+{
+    int ret = 0;
+    int pos = position_to_edge(tb->v_x[0], tb->v_y[0], tb->v_x[1], tb->v_y[1]);
+    if (pos == -1)
+        return -1;
+    else if (pos == 0)
+        ret = 1;
+    pos = position_to_edge(tb->v_x[1], tb->v_y[1], tb->v_x[2], tb->v_y[2]);
+    if (pos == -1)
+        return -1;
+    else if (pos == 0)
+        ret = 2;
+    pos = position_to_edge(tb->v_x[2], tb->v_y[2], tb->v_x[0], tb->v_y[0]);
     if (pos == -1)
         return -1;
     else if (pos == 0)
@@ -1473,12 +1505,16 @@ inline bool Delaunay_Voronoi::point_in_triangle(double x, double y, Triangle* t)
 }
 
 
-struct Bound {
-    double min_x;
-    double max_x;
-    double min_y;
-    double max_y;
-};
+inline bool Delaunay_Voronoi::point_in_triangle(double x, double y, Triangle_withBound* tb)
+{
+    if (x >= tb->min_x && x <= tb->max_x && y >= tb->min_y && y <= tb->max_y) {
+        Point p(x, y);
+        int ret = p.position_to_triangle(tb);
+        return ret != -1;
+    } else {
+        return false;
+    }
+}
 
 
 inline bool Delaunay_Voronoi::point_in_bound(double x, double y, Bound* b)
@@ -1550,6 +1586,8 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
     double len_y = max_y - min_y;
 
     unsigned num_triangles = all_leaf_triangles.size();
+
+    /* nexts is an array recording all new points' next element */
     int* nexts = new int[num];
 
     memset(nexts, -1, num*sizeof(int));
@@ -1590,20 +1628,23 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
                     PDASSERT(j < block_size);
                     PDASSERT(k < block_size);
                     PDASSERT(idx < block_size*block_size);
-                    num_including_triangles[idx]++;
-                    triangles_buf_len++;
+                    if (num_including_points[idx] > 0) {
+                        num_including_triangles[idx]++;
+                        triangles_buf_len++;
+                    }
                 }
         }
 
-        /* allocing memory */
+        /* allocing and assigning memory */
         unsigned** including_points = new unsigned*[block_size*block_size];
-        unsigned** including_triangles = new unsigned*[block_size*block_size];
+        Triangle_withBound** including_triangles = new Triangle_withBound*[block_size*block_size];
 
         unsigned* points_idx_buf = new unsigned[points_buf_len];
-        unsigned* triangles_idx_buf = new unsigned[triangles_buf_len];
+        Triangle_withBound* triangles_idx_buf = new Triangle_withBound[triangles_buf_len];
 
         unsigned* unassinged_p_buf = points_idx_buf;
-        unsigned* unassinged_t_buf = triangles_idx_buf;
+        Triangle_withBound* unassinged_t_buf = triangles_idx_buf;
+
         for (unsigned i = 0; i < block_size*block_size; i++) {
             if (num_including_points[i] > 0) {
                 including_points[i] = unassinged_p_buf;
@@ -1616,7 +1657,7 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
             }
         }
         assert(unassinged_p_buf == points_idx_buf + points_buf_len);
-        assert(unassinged_t_buf <= triangles_idx_buf + triangles_buf_len);
+        assert(unassinged_t_buf == triangles_idx_buf + triangles_buf_len);
 
         /* second scan: distributing points and triangles into mesh */
         memset(num_including_points, 0, sizeof(unsigned)*block_size*block_size);
@@ -1634,8 +1675,12 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
             for (unsigned j = y_idx_bgn; j <= y_idx_end; j++)
                 for (unsigned k = x_idx_bgn; k <= x_idx_end; k++) {
                     unsigned idx = k + j * block_size;
-                    if (including_triangles[idx]) {
-                        including_triangles[idx][num_including_triangles[idx]] = i;
+                    Triangle* tri = all_leaf_triangles[i];
+                    if (including_triangles[idx] > 0) {
+                        including_triangles[idx][num_including_triangles[idx]].make_from_triangle(vertex(tri, 0)->x, vertex(tri, 0)->y, 
+                                                                                                  vertex(tri, 1)->x, vertex(tri, 1)->y,
+                                                                                                  vertex(tri, 2)->x, vertex(tri, 2)->y,
+                                                                                                  &bound[i], i);
                         num_including_triangles[idx]++;
                     }
                 }
@@ -1647,21 +1692,15 @@ void Delaunay_Voronoi::distribute_initial_points(const double* x, const double* 
                 continue;
 
             unsigned* p_idxs = including_points[m];
-            unsigned* t_idxs = including_triangles[m];
+            Triangle_withBound* ts = including_triangles[m];
             unsigned  p_num = num_including_points[m];
             unsigned  t_num = num_including_triangles[m];
 
             for (unsigned i = 0; i < p_num; i++) {
                 unsigned p_idx = p_idxs[i];
                 for (unsigned j = 0; j < t_num; j++) {
-                    unsigned t_idx = t_idxs[j];
-                    if (!all_leaf_triangles[t_idx]->is_leaf)
-                        continue;
-
-                    if (!point_in_bound(x[p_idx], y[p_idx], &bound[t_idx]))
-                        continue;
-
-                    if (point_in_triangle(x[p_idx], y[p_idx], all_leaf_triangles[t_idx])) {
+                    unsigned t_idx = ts[j].index_in_vector;
+                    if (point_in_triangle(x[p_idx], y[p_idx], &ts[j])) {
                         if (all_leaf_triangles[t_idx]->remained_points_head == -1)
                             all_leaf_triangles[t_idx]->remained_points_head = all_leaf_triangles[t_idx]->remained_points_tail = p_idx;
                         else
@@ -2822,6 +2861,7 @@ void Triangle_inline::check_cyclic()
         is_cyclic = true;
 }
 
+
 bool operator == (Triangle_inline t1, Triangle_inline t2)
 {
 #ifdef DEBUG
@@ -2835,6 +2875,24 @@ bool operator == (Triangle_inline t1, Triangle_inline t2)
     if(t2.v[2] != t1.v[0] && t2.v[2] != t1.v[1] && t2.v[2] != t1.v[2])
         return false;
     return true;
+}
+
+
+void Triangle_withBound::make_from_triangle(double x0, double y0, double x1, double y1, double x2, double y2, Bound *bd, unsigned idx)
+{
+    v_x[0] = x0;
+    v_y[0] = y0;
+    v_x[1] = x1;
+    v_y[1] = y1;
+    v_x[2] = x2;
+    v_y[2] = y2;
+
+    min_x = bd->min_x;
+    max_x = bd->max_x;
+    min_y = bd->min_y;
+    max_y = bd->max_y;
+
+    index_in_vector = idx;
 }
 
 

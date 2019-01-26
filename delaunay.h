@@ -101,7 +101,8 @@ class Delaunay_Voronoi
         void distribute_initial_points(const double* x, const double* y, int num, int** output_nexts);
         void enlarge_super_rectangle(const double* x, const double* y, int num);
         Bound* make_bounding_box();
-        bool point_in_triangle(double x, double y, Triangle* t);
+        bool point_in_triangle(double, double, Triangle*);
+        bool point_in_triangle(double, double, Triangle_withBound*);
         bool point_in_bound(double x, double y, Bound* b);
 
         void distribute_points_into_triangles(int, int, unsigned, unsigned);

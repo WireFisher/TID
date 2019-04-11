@@ -1,1 +1,1 @@
-# Incremental Delaunay
+# Truly Incremental Delaunay

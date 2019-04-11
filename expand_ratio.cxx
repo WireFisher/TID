@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < 2; i++)
     {
         char filepath[64];
-        snprintf(filepath, 64, path, rand_fine[i]);
+        snprintf(filepath, 64, path, rand_cors[i]);
 
         if (i > 0 && non_incremental)
             strncat(filepath, ".png.flat", 64);
@@ -95,15 +95,19 @@ int main(int argc, char* argv[])
         }
 
         timeval start, end;
+        timeval start2, end2;
 
         gettimeofday(&start, NULL);
         triangulation->add_points(x, y, num_points);
         gettimeofday(&end, NULL);
 
+        gettimeofday(&start2, NULL);
         triangulation->triangulate();
+        gettimeofday(&end2, NULL);
 
 	if (i != 0)
-        fprintf(stderr, "time: %ld us, points: %d\n", (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec), num_points);
+            fprintf(stderr, "locate: %ld us, triangulate: %ld us\n", (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec),
+			                                         (end2.tv_sec - start2.tv_sec) * 1000000 + (end2.tv_usec - start2.tv_usec));
 
         delete[] x;
         delete[] y;
